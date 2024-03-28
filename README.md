@@ -1,12 +1,11 @@
-**Reenu's YouTube Data Extraction and Analysis using MySQL and Streamlit
-**
+**Reenu's YouTube Data Extraction and Analysis using MySQL and Streamlit**
 
 **Introduction**
 
 Reenu's YouTube Data Extraction and Analysis is a project that aims to allow users to access and analyze data from multiple YouTube channels. The project utilizes MySQL and Streamlit to create a user-friendly application that allows users to retrieve, store, and query YouTube channel and video data.
 
-**Project Overview
-**
+**Project Overview**
+
 The Reenu's YouTube Data Extraction and Analysis project consists of the following components:
 
 Streamlit Application: A user-friendly multi-page UI built using Streamlit library, allowing users to interact with the application and perform data retrieval and analysis tasks.
@@ -14,8 +13,8 @@ YouTube API Integration: Integration with the YouTube API to fetch channel and v
 SQL Data Warehouse: Migration of data from the data lake to a SQL database, allowing for efficient querying and analysis using SQL queries.
 Data Visualization: Presentation of retrieved data using Streamlit's data visualization features, enabling users to analyze the data through charts.
 
-**Technologies Used: 
-**
+**Technologies Used:**
+
 Python: The programming language used for building the application and scripting tasks.
 Streamlit: A Python library used for creating interactive web applications and data visualizations.
 YouTube API: Google API is used to retrieve channel and video data from YouTube.
@@ -23,8 +22,8 @@ SQL (MySQL): A relational database used as a data warehouse for storing migrated
 SQLAlchemy: A Python library used for SQL database connectivity and interaction.
 Pandas: A data manipulation library used for data processing and analysis.
 
-**Installation and Setup:
-**
+**Installation and Setup:**
+
 To run the Reenu's YouTube Data Extraction and Analysis project, follow these steps:
 
 Install Python: Install the Python programming language on your machine.
@@ -38,9 +37,11 @@ Configure Application:
 **Run the Application:** Launch the Streamlit application using the command-line interface.
 
 **Usage**
+
 Once the project is setup and running, users can access the Streamlit application through a web browser ( default http://localhost:8501/ ).
 
 **Features** 
+
 The Multi-page application will provide a user interface with the following pages:
 Home page- sidebar with page links and introduction to application
 Data Extraction page:
@@ -49,8 +50,8 @@ Data Extraction page:
 Data Viewer page: Search and retrieve data from the SQL database using various search options.
 Data Insights page:Perform data analysis using the tables and chart visualization displayed on Data Insights page.
 
-**Future Enhancements
-**
+**Future Enhancements**
+
 Here are some potential future enhancements for the Reenu's YouTube Data Extraction and Analysis project:
 
 Authentication and User Management: Implement user authentication and management functionality to secure access to the application.

@@ -19,12 +19,12 @@ def main():
     # Option to search and retrieve data from SQL
     search_option = st.selectbox("Search option", ["None","Videos", "Comments"])
     if search_option == "Videos":
-        db_videos_df = get_video_data(selected_id)
+        db_videos_df = fetch_video_data(selected_id)
         st.subheader("Video Data")
         st.dataframe(db_videos_df)
 
     elif search_option == "Comments":
-        db_comment_df = get_comment_data(selected_id)
+        db_comment_df = fetch_comment_data(selected_id)
         st.subheader("Comment Data")
         st.dataframe(db_comment_df)
 

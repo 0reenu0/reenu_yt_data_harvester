@@ -47,7 +47,7 @@ def fetch_highest_no_videos_channel():
     return df
 
  #  top 10 most viewed videos and their respective channels
-def fetch_top_ten_viewed_videos_per_channel():
+def fetch_top_ten_viewed_videos_with_channel():
     query = text('''    SELECT v.video_title, v.video_view_count, c.channel_name  FROM video_data v
                         JOIN playlist_data p ON p.playlist_id=v.playlist_id
                         JOIN channel_data c ON p.channel_id=c.channel_id
@@ -97,7 +97,7 @@ def fetch_channel_video_published_in_year(year):
 
  #  average duration of all videos in each channel, and what are their corresponding channel names
 def fetch_avg_duration_per_channel():
-    query = text('''    SELECT c.channel_name  FROM video_data v
+    query = text('''    SELECT c.channel_name,v.video_duration  FROM video_data v
                         JOIN playlist_data p ON p.playlist_id=v.playlist_id
                         JOIN channel_data c ON p.channel_id=c.channel_id
                         ''')

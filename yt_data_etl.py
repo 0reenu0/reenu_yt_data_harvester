@@ -16,6 +16,7 @@ channel_ids_default_list=['--- channel_id----','---channel id---' ]
 youtube=build('youtube','v3',developerKey=api_key)
 
 
+
 def get_channel_stats(yt,channel_ids):
     all_data=[]
     req=yt.channels().list(
@@ -92,7 +93,7 @@ def get_playlist_videoIds(yt, playlist_id):
         next_page_token = playlistItem_res.get('nextPageToken')
         if next_page_token is None:
             break
-        return videoIds
+    return videoIds
 
 
 # In[6]:
@@ -101,54 +102,74 @@ def get_playlist_videoIds(yt, playlist_id):
 def get_video_stats(yt,playlist_id):
 
     videoIds=get_playlist_videoIds(yt,playlist_id)
-            
-    video_res=yt.videos().list(
-    part='id,snippet,contentDetails,statistics',
-    id=','.join(videoIds),
-    maxResults=50).execute()
-
-    videos=video_res['items']
+    no_videos=len(videoIds)
+    j=-1
+    k=0
     video_data=[]
-    for video in videos:
-        data=dict( playlist_id=playlist_id,
-                  video_id=video['id'],
-                  video_title=video['snippet']['title'],
-                  video_description=video['snippet']['description'],
-                  video_published_date=video['snippet']['publishedAt'],
-                  video_view_count=video['statistics']['viewCount'],
-                  video_like_count=video['statistics']['likeCount'],
-                  video_dislike_count=0, #private property as on and after dec13, 2021, only channel owner can access
-                  video_favorite_count=0,#deprecated in 2015, always 0
-                  video_comment_count= video['statistics']['commentCount'],
-                  video_duration=video['contentDetails']['duration'],
-                  video_thumbnail=video['snippet']['thumbnails']['default']['url'], # valid thumbnail key values are, default,standard, high,medium,maxres
-                  caption_status=video['contentDetails']['caption']        
-        )
-        video_data.append(data)
+
+    for i in range(0,150,50):
+        k=k+50
+        if(k>no_videos):
+            k=no_videos-1
+            
+        video_res=yt.videos().list(
+        part='id,snippet,contentDetails,statistics',
+        id=','.join(videoIds[(j+1):k])).execute()
+    
+        videos=video_res['items']
+        for video in videos:
+            data=dict( playlist_id=playlist_id,
+                      video_id=video['id'],
+                      video_title=video['snippet']['title'],
+                      video_description=video['snippet']['description'],
+                      video_published_date=video['snippet']['publishedAt'],
+                      video_view_count=video['statistics']['viewCount'],
+                      video_like_count=video['statistics']['likeCount'],
+                      video_dislike_count=0, #private property as on and after dec13, 2021, only channel owner can access
+                      video_favorite_count=0,#deprecated in 2015, always 0
+                      video_comment_count= video['statistics']['commentCount'],
+                      video_duration=video['contentDetails']['duration'],
+                      video_thumbnail=video['snippet']['thumbnails']['default']['url'], # valid thumbnail key values are, default,standard, high,medium,maxres
+                      caption_status=video['contentDetails']['caption']        
+            )
+            video_data.append(data)
+        j=k
         
     return video_data
 
 
 
+
 def get_video_comments_data(yt,video_id):
    
-    comments_res=yt.commentThreads().list(
-    part='id,snippet',
-    videoId=video_id,
-    maxResults=50
-    ).execute()
-
-    comments=comments_res['items']
+    next_page_token=None
+    
+    i=0
     comments_data=[]
-    for comment in comments:
-        comment=dict(
-            video_id=comment['snippet']['videoId'],
-            comment_id=comment['id'],
-            comment_text=comment['snippet']['topLevelComment']['snippet']['textDisplay'],
-            comment_author=comment['snippet']['topLevelComment']['snippet']['authorDisplayName'],
-            comment_published_date=comment['snippet']['topLevelComment']['snippet']['publishedAt']
-        )
-        comments_data.append(comment)
+
+    while True:
+        comments_res=yt.commentThreads().list(
+        part='id,snippet',
+        videoId=video_id,
+        maxResults=50,
+        pageToken=next_page_token
+        ).execute()
+        
+        comments=comments_res['items']
+        for comment in comments:
+            comment=dict(
+                video_id=comment['snippet']['videoId'],
+                comment_id=comment['id'],
+                comment_text=comment['snippet']['topLevelComment']['snippet']['textDisplay'],
+                comment_author=comment['snippet']['topLevelComment']['snippet']['authorDisplayName'],
+                comment_published_date=comment['snippet']['topLevelComment']['snippet']['publishedAt']
+            )
+            comments_data.append(comment)
+        next_page_token=comments_res.get('nextPageToken')
+        i=i+50
+        if next_page_token is None or i>=150:
+            break
+    
     return comments_data
 
 
@@ -158,17 +179,18 @@ def get_video_comments_data(yt,video_id):
 def get_all_comments_data(yt,channelId):
 
     next_page_token=None
-    comments_res=yt.commentThreads().list(
-    part='id,snippet',
-    #videoId=video_id,
-    allThreadsRelatedToChannelId=channelId,
-    maxResults=50,
-    pageToken=next_page_token
-    ).execute()
+    comments_data=[]
     
     while True:
+        comments_res=yt.commentThreads().list(
+        part='id,snippet',
+        #videoId=video_id,
+        allThreadsRelatedToChannelId=channelId,
+        maxResults=50,
+        pageToken=next_page_token
+        ).execute()
+
         comments=comments_res['items']
-        comments_data=[]
         for comment in comments:
             comment=dict(
                 video_id=comment['snippet']['videoId'],
@@ -184,6 +206,7 @@ def get_all_comments_data(yt,channelId):
             break
         else:
             print("next comment page")
+
     return comments_data
 
 
@@ -203,13 +226,13 @@ def get_channel_data(channel_id):
     pl_id=ch_df.iloc[0]['playlist_id']
     playlist_info= get_playlist_info(youtube,pl_id)
     video_data= get_video_stats(youtube,pl_id)
-    video_df=pd.DataFrame(video_data)
 
-    video_df = video_df.reset_index() 
-    for index, row in video_df.iterrows():
-       comments_data.extend(get_video_comments_data(youtube,row['video_id'])) #not recommended to iterate over dataframes as it increases memory usage
-        
+    for data in video_data:
+       id=data.get('video_id')
+       comments_data.extend(get_video_comments_data(youtube,id))
+
     playlist_df=pd.DataFrame(playlist_info)
+    video_df=pd.DataFrame(video_data)
     comments_df=pd.DataFrame(comments_data)
 
     print('retrieved comments count:',len(comments_data))
@@ -218,7 +241,7 @@ def get_channel_data(channel_id):
     return video_data    
 
 
-# In[16]:
+
 
 
 def get_channel_data_full(channel_id):
@@ -260,27 +283,39 @@ def get_channel_data_full(channel_id):
     return      
 
 
-
-
 # Migrate channel data to SQL
 def insert_to_mysqldb():
 
-    #replace username, password, portno  and dbname according to your MySQL user creds, port configuration and schema name
-    connection_string = 'mysql+pymysql://username:password@localhost:portno/schemaname'
-
+    connection_string = 'mysql+pymysql://yt_etl_user:etl123@localhost:3306/youtube_data'
     engine = create_engine(connection_string)
 
     with engine.begin() as conn:
         channel_name=ch_df['channel_name']
-        ch_df1 = ch_df.drop(['playlist_id'],axis=1)
-        video_df1 = video_df.drop(['index'],axis=1)
+        
+        ch_df1=ch_df
+        if 'playlist_id' in ch_df.columns:
+            ch_df1 = ch_df.drop(['playlist_id'],axis=1)
+
+        video_df1=video_df  
+        if 'index' in video_df.columns:
+            video_df1 = video_df.drop(['index'],axis=1)
+
+        
+        video_df2=video_df1.drop_duplicates(subset='video_id',keep='first')
+        comments_df2=comments_df.drop_duplicates(subset='comment_id',keep='first')
+
+        ''' ch_df1.to_csv('channel.csv')
+        playlist_df.to_csv('playlist_data.csv')
+        video_df2.to_csv('video_data.csv')
+        comments_df2.to_csv('comments.csv') '''
 
         ch_df1.to_sql('channel_data', conn, if_exists='append', index=False)
         playlist_df.to_sql('playlist_data', conn, if_exists='append', index=False)
-        video_df1.to_sql('video_data', conn, if_exists='append', index=False)
-        comments_df.to_sql('comments', conn, if_exists='append', index=False)
+        video_df2.to_sql('video_data', conn, if_exists='append', index=False)
+        comments_df2.to_sql('comments', conn, if_exists='append', index=False)
 
     return channel_name
+
 
 
 

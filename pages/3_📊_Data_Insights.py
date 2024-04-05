@@ -1,5 +1,6 @@
 import streamlit as st
 from yt_mysql_helper import *
+import yt_time_helper as timehelper
 
 # Streamlit app code
 def main():
@@ -36,8 +37,16 @@ def main():
     if st.button("Channels that published videos in the year 2024"):
             st.table(fetch_channel_video_published_in_year('2024'))
             
-   # if st.button("Average duration of all videos in each channel"):
-          #  st.table(fetch_avg_duration_per_channel())
+    if st.button("Average duration of all videos in each channel"):
+            video_df=fetch_avg_duration_per_channel()
+            channels=video_df.channel_name.unique()
+            resdf=pd.DataFrame(channels)
+            resdf = resdf.rename(columns={0: "channel_name"}) 
+            avg=[]
+            for channel in channels:
+                avg.append(timehelper.avg_duration(video_df[video_df['channel_name']==channel]))
+            resdf['avg_duration in seconds']= avg 
+            st.table(resdf)
     
     if st.button("Top 5 videos with highest number of comments"):
             df=fetch_highest_comments_per_channel()

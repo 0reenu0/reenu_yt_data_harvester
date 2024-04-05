@@ -15,6 +15,7 @@ def main():
 
     if st.sidebar.button("Pull Data"):
          result_list=get_channel_data(channel_id_txt)
+         st.success(f"The no. of videos whose data is pulled from Youtube is: '{len(result_list)}'")
          st.write(*result_list)
   
     if st.sidebar.button("Migrate to SQL"):
